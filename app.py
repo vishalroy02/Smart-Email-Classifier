@@ -151,7 +151,8 @@ def main():
             
             st.markdown("""
                 <div class="info-box">
-                    <strong>💡 How to get App Password?</strong><br>
+                    <strong style="color: #0d47a1;">💡 How to get App Password?</strong><br>
+                    <span style="color: #1a73e8;">
                     1. Go to your <b>Google Account Settings</b>.<br>
                     2. Enable <b>2-Step Verification</b>.<br>
                     3. Search for <b>'App Passwords'</b> in the search bar.<br>
