@@ -9,16 +9,14 @@ import imaplib
 import email
 from email.header import decode_header
 from bs4 import BeautifulSoup
-from supabase import create_client, Client # Added for Supabase
+from supabase import create_client, Client 
 
-# --- CONFIGURATION ---
-# Note: For Streamlit Cloud deployment, remove the local tesseract path line.
-# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 
 st.set_page_config(page_title="Smart Email Classifier", page_icon="🤖", layout="centered")
 
 # --- SUPABASE CONNECTION ---
-# These will be set in Streamlit Cloud Secrets
+
 URL = st.secrets["SUPABASE_URL"]
 KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(URL, KEY)
@@ -28,12 +26,12 @@ def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 def add_userdata(fullname, username, password):
-    # Inserts data into Supabase cloud table
+    
     data = {"fullname": fullname, "username": username, "password": password}
     supabase.table("userstable").insert(data).execute()
 
 def login_user(username, password):
-    # Checks data from Supabase cloud table
+    
     response = supabase.table("userstable").select("fullname").eq("username", username).eq("password", password).execute()
     if response.data:
         return [response.data[0]['fullname']]
@@ -115,7 +113,7 @@ def main():
             new_passwd = st.text_input("Create Password", type='password', key="r_pass")
             if st.button("Register Account"):
                 if new_fullname and new_user and new_passwd:
-                    # Password Strength Validation (Symbols & Numbers)
+                    
                     if len(new_passwd) < 8 or not re.search("[0-9]", new_passwd) or not re.search("[@#$%^&+=]", new_passwd):
                         st.warning("Password must be 8+ chars with at least one number and one symbol (@#$%^&+=).")
                     else:
