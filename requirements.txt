@@ -1,0 +1,7 @@
+streamlit
+joblib
+pillow
+pytesseract
+beautifulsoup4
+scikit-learn
+supabase
