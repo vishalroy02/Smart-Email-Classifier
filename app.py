@@ -112,7 +112,6 @@ def main():
                 else: st.error("Invalid Username or Password!")
         
         with tab2:
-            # Using form to clear data after registration
             with st.form("signup_form", clear_on_submit=True):
                 new_fullname = st.text_input("Full Name")
                 new_user = st.text_input("Username (Email)")
