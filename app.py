@@ -11,12 +11,9 @@ from email.header import decode_header
 from bs4 import BeautifulSoup
 from supabase import create_client, Client 
 
-
-
 st.set_page_config(page_title="Smart Email Classifier", page_icon="🤖", layout="centered")
 
 # --- SUPABASE CONNECTION ---
-
 URL = st.secrets["SUPABASE_URL"]
 KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(URL, KEY)
@@ -26,12 +23,10 @@ def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 def add_userdata(fullname, username, password):
-    
     data = {"fullname": fullname, "username": username, "password": password}
     supabase.table("userstable").insert(data).execute()
 
 def login_user(username, password):
-    
     response = supabase.table("userstable").select("fullname").eq("username", username).eq("password", password).execute()
     if response.data:
         return [response.data[0]['fullname']]
@@ -45,7 +40,15 @@ st.markdown("""
 .prediction-card{ padding:30px; border-radius:15px; background-color:#f8f9fa; border-top:5px solid #4CAF50; text-align:center; box-shadow:0px 4px 12px rgba(0,0,0,0.1); color:black;}
 .spam-alert{ padding:30px; border-radius:15px; background-color:#ffe6e6; border-top:6px solid red; text-align:center; box-shadow:0px 4px 12px rgba(0,0,0,0.4); color:black; }
 .header-style{ text-align:center; color:#2E4053; margin-bottom:5px; }
-.info-box { background-color: #e8f0fe; padding: 15px; border-radius: 8px; border-left: 5px solid #1a73e8; margin: 10px 0 20px 0; }
+/* Fixed info-box for Dark Mode visibility */
+.info-box { 
+    background-color: #e8f0fe !important; 
+    padding: 15px; 
+    border-radius: 8px; 
+    border-left: 5px solid #1a73e8; 
+    margin: 10px 0 20px 0;
+    color: #1a73e8 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -90,13 +93,13 @@ def fetch_gmail_emails_app_pass(user_email, app_password):
         return [], {}
 
 def main():
-    # Session state for login
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
 
     if not st.session_state['logged_in']:
         st.markdown("<h1 class='header-style'>🔐 AI Email Classifier Access</h1>", unsafe_allow_html=True)
         tab1, tab2 = st.tabs(["Login", "Sign Up"])
+        
         with tab1:
             user = st.text_input("Username (Email)", key="l_user")
             passwd = st.text_input("Password", type='password', key="l_pass")
@@ -107,18 +110,25 @@ def main():
                     st.session_state['user_fullname'] = result[0]
                     st.rerun()
                 else: st.error("Invalid Username or Password!")
+        
         with tab2:
-            new_fullname = st.text_input("Full Name", key="r_name")
-            new_user = st.text_input("Username (Email)", key="r_user")
-            new_passwd = st.text_input("Create Password", type='password', key="r_pass")
-            if st.button("Register Account"):
-                if new_fullname and new_user and new_passwd:
-                    
-                    if len(new_passwd) < 8 or not re.search("[0-9]", new_passwd) or not re.search("[@#$%^&+=]", new_passwd):
-                        st.warning("Password must be 8+ chars with at least one number and one symbol (@#$%^&+=).")
+            # Using form to clear data after registration
+            with st.form("signup_form", clear_on_submit=True):
+                new_fullname = st.text_input("Full Name")
+                new_user = st.text_input("Username (Email)")
+                new_passwd = st.text_input("Create Password", type='password')
+                submit_btn = st.form_submit_button("Register Account")
+                
+                if submit_btn:
+                    if new_fullname and new_user and new_passwd:
+                        if len(new_passwd) < 8 or not re.search("[0-9]", new_passwd) or not re.search("[@#$%^&+=]", new_passwd):
+                            st.warning("Password must be 8+ chars with at least one number and one symbol (@#$%^&+=).")
+                        else:
+                            add_userdata(new_fullname, new_user, make_hashes(new_passwd))
+                            st.success("✅ Account created successfully!")
+                            st.info("Now please go to the 'Login' tab to access the app.")
                     else:
-                        add_userdata(new_fullname, new_user, make_hashes(new_passwd))
-                        st.success("Account created successfully! Please Login.")
+                        st.error("Please fill all fields.")
     else:
         with st.sidebar:
             st.title(f"Welcome, {st.session_state['user_fullname']}! 👋")
@@ -156,6 +166,7 @@ def main():
                     3. Search for <b>'App Passwords'</b> in the search bar.<br>
                     4. Select 'Other' and name it 'Email Classifier'.<br>
                     5. Copy the 16-digit yellow box code and paste it above.
+                    </span>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -176,9 +187,9 @@ def main():
                 st.markdown(f"""
                 <div style="background-color: white; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                     <h3 style="color:#1a73e8;">{selected_email}</h3>
-                    <p><b>From:</b> {email_data['from']}</p>
+                    <p style="color: black;"><b>From:</b> {email_data['from']}</p>
                     <hr>
-                    <p style='white-space: pre-line;'>{final_text}</p>
+                    <p style='white-space: pre-line; color: black;'>{final_text}</p>
                 </div>
                 """, unsafe_allow_html=True)
 
